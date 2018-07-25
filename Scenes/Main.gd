@@ -5,7 +5,7 @@ extends Node
 #La velocidad sobre la rampa es vr = velocidad_inicial + ar * t
 #La posicion sobre la rampa es xr = posicion_inicial + g * sin(alfa1) * 0.5 * t^2
 
-const escala = 100 #Un metro = 10 pixeles
+const escala = 100.0 #Un metro = 10 pixeles
 
 #Rampa1
 const x_rampa1 = 0.10 #Inicio rampa1
@@ -18,7 +18,7 @@ var alfa1 #Angulo de la rampa1
 const x_rampa2 = xf_rampa1 #Inicio rampa2
 const y_rampa2 = yf_rampa1
 const xf_rampa2 = 6.10
-const yf_rampa2 = 0.5
+const yf_rampa2 = 2.0
 var alfa2
 
 const g = 9.8 #Aceleracion hacia abajo
@@ -48,7 +48,7 @@ func calculo_rampa_recta(dt, alfa):
 	$Pelota.position.x += (dd * cos(alfa)) * escala #Transformo la posicion sobre la rampa1 en coordenadas
 	$Pelota.position.y += (dd * sin(alfa)) * escala
 	#A: Integre en la posicion el cambio qe produjo la aceleracion de esta rampa
-#	printt("R1:", $Pelota.position.x, $Pelota.position.y, ar, vr, t)
+	printt("R:", $Pelota.position.x, $Pelota.position.y, ar, vr, t)
 
 func _process(delta):
 	t += delta
