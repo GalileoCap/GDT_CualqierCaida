@@ -17,9 +17,16 @@ var alfa1 #Angulo de la rampa1
 #Rampa2
 const x_rampa2 = xf_rampa1 #Inicio rampa2
 const y_rampa2 = yf_rampa1
-const xf_rampa2 = 6.10
-const yf_rampa2 = 2.0
+const xf_rampa2 = x_rampa2 + 3.10
+const yf_rampa2 = y_rampa2 - 1.0
 var alfa2
+
+#Rampa3
+const r_rampa3 = 50.0
+const x_rampa3 = xf_rampa2
+const y_rampa3 = yf_rampa2
+const xf_rampa3 = x_rampa3 + r_rampa3
+const yf_rampa3 = y_rampa3 - r_rampa3
 
 const g = 9.8 #Aceleracion hacia abajo
 const v0 = 0 #Velocidad inicial
