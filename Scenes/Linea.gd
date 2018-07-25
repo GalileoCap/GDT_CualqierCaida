@@ -1,16 +1,15 @@
 extends Node2D
 
-
 func draw_circle_arc(center, radius, angle_from, angle_to, color):
     var nb_points = 32
     var points_arc = PoolVector2Array()
 
     for i in range(nb_points+1):
         var angle_point = angle_from + i * (angle_to-angle_from) / nb_points
-        points_arc.push_back(center + Vector2(cos(angle_point), sin(angle_point)) * radius)
+        points_arc.push_back(center + Vector2(-cos(angle_point), -sin(angle_point)) * radius)
 
     for index_point in range(nb_points):
-        draw_line(points_arc[index_point], points_arc[index_point + 1], color)
+        draw_line(points_arc[index_point], points_arc[index_point + 1], color, 5.0)
 
 func dibujar_arco_ppr(x0, y0, x1, y1, r):
 	var p = get_node("..")
@@ -34,7 +33,7 @@ func dibujar_arco_ppr(x0, y0, x1, y1, r):
 	#Nos calculamos las raices para DOS circulos, panza p'arriba y panza p'abajo.
 
 	var a0 = atan2(x0 - xcA, y0 - ycA)
-	var a1 = atan2(x1 - xcA, y1 - ycA)
+	var a1 = -atan2(x1 - xcA, y1 - ycA)
 	printt("Angulos:", a0, a1)
 	draw_circle_arc(Vector2(xcB * p.escala, ycB * p.escala), r * p.escala, a0, a1, 100)
 
