@@ -33,6 +33,7 @@ var vr = 0 #Velocidad sobre la rampa1
 var t = 0 #Tiempo pasado desde el inicio
 var xant #La posicion anterior
 var yant
+var Pista = Array()
 
 func _ready():
 	$Pelota.position.x = x_rampa1 * escala
@@ -46,15 +47,21 @@ func _ready():
 	var dy2 = yf_rampa2 - y_rampa2
 	alfa2 =  atan2(dy2, dx2)
 #	printt(alfa1, alfa2)
-
+	
+	rampa3.T = "C"
 	rampa3.r = 3.0 #Radio
 	rampa3.x0 = xf_rampa2
 	rampa3.y0 = yf_rampa2
 	rampa3.x1 = rampa3.x0 + rampa3.r * 2 - 0.1
 	rampa3.y1 = rampa3.y0 - 1
+	rampa3.col = Color(100, 0, 0)
 
 	checkeo_arco(rampa3)
 	cuentas_arco(rampa3)
+
+	Pista.push_back({"T":"L", "x0":x_rampa1, "y0":y_rampa1, "x1":xf_rampa1, "y1":yf_rampa1, "col": Color(0, 100, 0)})
+	Pista.push_back({"T":"L", "x1":xf_rampa2, "y1":yf_rampa2, "col": Color(0, 0, 100)})
+	Pista.push_back(rampa3)
 
 func dist(par):
 	return(sqrt(pow(par.x1 - par.x0, 2) + pow(par.y1 - par.y0, 2)))

@@ -16,12 +16,21 @@ func draw_circle_arc(center, radius, angle_from, angle_to, color):
 
 func _draw():
 	var p = get_node("..")
-	var x0 = p.x_rampa1
-	var y0 = p.y_rampa1
 
-	var x1 = p.xf_rampa1
-	var y1 = p.yf_rampa1
+	var xant
+	var yant
 
-	draw_line(Vector2(x0 * p.escala, y0 * p.escala), Vector2(x1 * p.escala, y1 * p.escala), Color(0, 100, 0), 5)
-	draw_line(Vector2(p.x_rampa2 * p.escala, p.y_rampa2 * p.escala), Vector2(p.xf_rampa2 * p.escala, p.yf_rampa2 * p.escala), Color(0, 0, 100), 5)
-	draw_circle_arc(Vector2(p.rampa3.xc * p.escala, p.rampa3.yc * p.escala), p.rampa3.r * p.escala, p.rampa3.a0, p.rampa3.a1, 100)
+	for parte in p.Pista:
+		if not parte.has("x0"): parte.x0 = xant
+		if not parte.has("y0"): parte.y0 = yant
+
+		if parte.T == "C":
+			draw_circle_arc(Vector2(parte.xc * p.escala, parte.yc * p.escala), parte.r * p.escala, parte.a0, parte.a1, parte.col)
+		else:
+			draw_line(Vector2(parte.x0 * p.escala, parte.y0 * p.escala), Vector2(parte.x1 * p.escala, parte.y1 * p.escala), parte.col, 5)
+
+		xant = parte.x1
+		yant = parte.y1
+
+#	draw_line(Vector2(p.x_rampa2 * p.escala, p.y_rampa2 * p.escala), Vector2(p.xf_rampa2 * p.escala, p.yf_rampa2 * p.escala), Color(0, 0, 100), 5)
+#	draw_circle_arc(Vector2(p.rampa3.xc * p.escala, p.rampa3.yc * p.escala), p.rampa3.r * p.escala, p.rampa3.a0, p.rampa3.a1, 100)
