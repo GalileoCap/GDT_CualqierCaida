@@ -33,6 +33,10 @@ const g = 9.8 #Aceleracion hacia abajo
 
 var vr = 0 #Velocidad sobre la rampa1
 var t = 0 #Tiempo pasado desde el inicio
+var xant #La posicion anterior
+var yant
+
+var res
 
 func _ready():
 	$Pelota.position.x = x_rampa1 * escala
@@ -47,6 +51,39 @@ func _ready():
 	alfa2 =  atan2(dy2, dx2)
 #	printt(alfa1, alfa2)
 
+	var r = r_rampa3
+	var x0 = x_rampa3
+	var y0 = y_rampa3
+	var x1 = x0 + r
+	var y1 = y0 - r
+	res = cuentas_arco(x0, y0, x1, y1, r)
+
+func cuentas_arco(x0, y0, x1, y1, r):
+	var b = -(x1-x0)/(y1-y0)
+	var c = (-pow(x0, 2) + pow(x1, 2) - pow(y0, 2) + pow(y1, 2))/(2.0*(y1-y0))
+#	printt("B y C:", b, c)
+
+	var aq = pow(b, 2) + 1.0
+	var bq = -2.0 * x0 + 2.0 * b * c - 2.0 * b * y0
+	var cq = pow(x0, 2) + pow(y0, 2) + pow(c, 2) - 2.0 * y0 * c - pow(r, 2)
+	var dq = pow(bq, 2) - 4.0 * aq * cq
+#	printt("AQ, BQ, CQ, DQ:", aq, bq, cq, dq)
+
+	var xcA = (-bq + sqrt(dq)) / (2.0*aq)
+	var xcB = (-bq - sqrt(dq)) / (2.0*aq)
+#	printt("Raices x:", xcA, xcB)
+
+	var ycA = xcA * b + c
+	var ycB = xcB * b + c
+#	printt("Raices y:", ycA, ycB)
+	#Nos calculamos las raices para DOS circulos, panza p'arriba y panza p'abajo.
+
+	var a0 = atan2(x0 - xcA, y0 - ycA)
+	var a1 = -atan2(x1 - xcA, y1 - ycA)
+#	printt("Angulos:", a0, a1)
+	var res = {"xc":xcB, "yc":ycB, "a0":a0, "a1":a1, "x0":x0, "x1":x1, "y0":y0, "y1":y1, "r":r, }
+	return(res)
+
 func calculo_rampa_recta(dt, alfa):
 	var ar = g * sin(alfa) #Aceleracion sobre la rampa
 	vr += ar * dt #Integramos aceleracion para consegir velocidad
@@ -55,27 +92,25 @@ func calculo_rampa_recta(dt, alfa):
 	$Pelota.position.x += (dd * cos(alfa)) * escala #Transformo la posicion sobre la rampa en coordenadas
 	$Pelota.position.y += (dd * sin(alfa)) * escala
 	#A: Integre en la posicion el cambio qe produjo la aceleracion de esta rampa
-	printt("R1 y R2:", $Pelota.position.x, $Pelota.position.y, vr, dd)
+	printt("R1 y R2:", $Pelota.position.x, $Pelota.position.y)
 
 func calculo_rampa_redonda(dt):
-	#Qiero dividir la aceleración de la gravedad, 
-	#para calcular la fuerza qe empuja para atras a la pelota.
-	#Para eso calculo el angulo al qe se encuentra la pelota respecto del inicio de la rampa
-	var dx3 = $Pelota.position.x - x_rampa3
-	var dy3 = $Pelota.position.y - y_rampa3
-	var alfa = atan2(dy3, dx3)
-
-	var ar = g * sin(alfa)
-	vr += ar * dt
 	var dd = vr * dt
-
 	#Como estoy integrando los cachos qe se mueve, puedo tratar cada movida sobre el cuarto de circulo
 	#como si fueran triángulos. Entonces puedo hacer los calculos desde el centro del circulo
 	#con una hipotenusa tamaño r, y el cateto adyacente qe va cambiando (el opuesto siendo dd)
 	$Pelota.position.x += dd * escala
-	$Pelota.position.y += sqrt(pow(r_rampa3, 2) - pow(dd, 2)) * escala #((C1^2 - R^2 * -1)^0.5) = C2
-	#El problema es qe acá estoy sumando todo el C2, cuando sólo qiero sumar la diferencia entre el nuevo y y el anterior
-	printt("R3:", $Pelota.position.x, $Pelota.position.y, dy3)
+	var mix = $Pelota.position.x / escala
+	var miy = sqrt(pow(res.r, 2) - pow(mix - res.xc, 2)) + res.yc
+	$Pelota.position.y = miy * escala
+	printt("R3:", $Pelota.position.x, $Pelota.position.y)
+
+	#Qiero dividir la aceleración de la gravedad, 
+	#para calcular la fuerza qe empuja para atras a la pelota.
+	#Para eso calculo el angulo al qe se encuentra la pelota respecto del punto anterior
+	var dx3 = $Pelota.position.x - xant
+	var dy3 = $Pelota.position.y - yant
+	var alfa = atan2(dy3, dx3)
 
 func _process(delta):
 	if $Pelota.position.x < xf_rampa1 * escala and $Pelota.position.x >= x_rampa1 * escala:
@@ -86,3 +121,6 @@ func _process(delta):
 
 	if $Pelota.position.x < xf_rampa3 * escala and $Pelota.position.x >= x_rampa3 * escala:
 		calculo_rampa_redonda(delta)
+
+	xant = $Pelota.position.x
+	yant = $Pelota.position.y
