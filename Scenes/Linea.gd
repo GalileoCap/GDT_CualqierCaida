@@ -1,15 +1,18 @@
 extends Node2D
 
 func draw_circle_arc(center, radius, angle_from, angle_to, color):
-    var nb_points = 32
-    var points_arc = PoolVector2Array()
+	#U: Dibuja un arco sentido antihorario (el sentido real no godoteano)
+	var nb_points = 32
+	printt("Params", center, radius, angle_from, angle_to)
 
-    for i in range(nb_points+1):
-        var angle_point = angle_from + i * (angle_to-angle_from) / nb_points
-        points_arc.push_back(center + Vector2(-cos(angle_point), -sin(angle_point)) * radius)
+	for i in range(1, nb_points+1):
+		var angle_desde = angle_from + (i - 1) * (angle_to-angle_from) / nb_points
+		var angle_hasta = angle_from + i * (angle_to-angle_from) / nb_points
+		var desde = center + Vector2(cos(angle_desde), -sin(angle_desde)) * radius
+		var hasta = center + Vector2(cos(angle_hasta), -sin(angle_hasta)) * radius
+		printt("Angulos:", i, desde, hasta, angle_desde, angle_hasta)
 
-    for index_point in range(nb_points):
-        draw_line(points_arc[index_point], points_arc[index_point + 1], color, 5.0)
+		draw_line(desde, hasta, color, 5.0)
 
 func _draw():
 	var p = get_node("..")

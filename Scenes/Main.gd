@@ -23,7 +23,9 @@ var alfa2
 
 #Rampa3
 var rampa3 = {}
+
 ############################################################################################
+
 const g = 9.8 #Aceleracion hacia abajo
 
 var ar = 0
@@ -31,8 +33,6 @@ var vr = 0 #Velocidad sobre la rampa1
 var t = 0 #Tiempo pasado desde el inicio
 var xant #La posicion anterior
 var yant
-
-var res
 
 func _ready():
 	$Pelota.position.x = x_rampa1 * escala
@@ -86,8 +86,8 @@ func cuentas_arco(par):
 
 	par.xc = xcB
 	par.yc = ycB
-	par.a0 = atan2(par.x0 - par.xc, par.y0 - par.yc)
-	par.a1 = -atan2(par.x1 - par.xc, par.y1 - par.yc)
+	par.a0 = -atan2(par.y0 - par.yc, par.x0 - par.xc)
+	par.a1 = -atan2(par.y1 - par.yc, par.x1 - par.xc)
 
 	printt("Par circulo:", par)
 	return(par)
@@ -97,8 +97,8 @@ func calculo_rampa_recta(dt, alfa):
 	vr += ar * dt #Integramos aceleracion para consegir velocidad
 	var dd = vr * dt #cuanto nos movimos en este instante
 
-	$Pelota.position.x += (dd * cos(alfa)) * escala #Transformo la posicion sobre la rampa en coordenadas
-	$Pelota.position.y += (dd * sin(alfa)) * escala
+	$Pelota.position.x += dd * cos(alfa) * escala #Transformo la posicion sobre la rampa en coordenadas
+	$Pelota.position.y += dd * sin(alfa) * escala
 	#A: Integre en la posicion el cambio qe produjo la aceleracion de esta rampa
 	printt("R1 y R2:", $Pelota.position.x, $Pelota.position.y)
 
@@ -113,6 +113,7 @@ func calculo_rampa_redonda(dt):
 
 	$Pelota.position.x = (mix + dd * cos(alfa)) * escala
 	$Pelota.position.y = (temp1 + rampa3.yc) * escala
+	
 	printt("R3:",  mix - rampa3.xc, alfa * 180 / PI, dd, vr, ar)
 
 func _process(delta):
