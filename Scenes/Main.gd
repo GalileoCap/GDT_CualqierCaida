@@ -95,22 +95,17 @@ func calculo_rampa_recta(dt, alfa):
 	printt("R1 y R2:", $Pelota.position.x, $Pelota.position.y)
 
 func calculo_rampa_redonda(dt):
-	var dd = vr * dt
-	#Como estoy integrando los cachos qe se mueve, puedo tratar cada movida sobre el cuarto de circulo
-	#como si fueran triángulos. Entonces puedo hacer los calculos desde el centro del circulo
-	#con una hipotenusa tamaño r, y el cateto adyacente qe va cambiando (el opuesto siendo dd)
-	$Pelota.position.x += dd * escala
 	var mix = $Pelota.position.x / escala
-	var miy = sqrt(pow(res.r, 2) - pow(mix - res.xc, 2)) + res.yc
-	$Pelota.position.y = miy * escala
-	printt("R3:", $Pelota.position.x, $Pelota.position.y)
+	var temp1 = 0.5 * sqrt(pow(res.r, 2) - pow(mix - res.xc, 2))
+	var alfa = atan2(1, temp1) #dy/dx = 1/temp1.,
+	#pero con x = r se volveria indefinida, por eso usamos atan2 qe tiene en cuenta ese caso
+	var ar = -g * sin(alfa)
+	vr += ar * dt
+	var dd = vr * dt #dd es en la direccion de la tangente del plano
 
-	#Qiero dividir la aceleración de la gravedad, 
-	#para calcular la fuerza qe empuja para atras a la pelota.
-	#Para eso calculo el angulo al qe se encuentra la pelota respecto del punto anterior
-	var dx3 = $Pelota.position.x - xant
-	var dy3 = $Pelota.position.y - yant
-	var alfa = atan2(dy3, dx3)
+	$Pelota.position.x += dd * cos(alfa) * escala
+	$Pelota.position.y -=  dd * sin(alfa) * escala
+	printt("R3:", $Pelota.position.x, alfa * 180 / PI, mix - res.xc, dd, vr, ar)
 
 func _process(delta):
 	if $Pelota.position.x < xf_rampa1 * escala and $Pelota.position.x >= x_rampa1 * escala:
