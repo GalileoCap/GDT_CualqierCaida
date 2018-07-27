@@ -7,58 +7,69 @@ extends Node
 
 const escala = 100.0 #Un metro = 10 pixeles
 
-#Rampa1
-const x_rampa1 = 0.10 #Inicio
-const y_rampa1 = 3.20
-const xf_rampa1 = 3.10 #Fin
-const yf_rampa1 = 6.0
-var alfa1 #Angulo
+#Para cada rampa qe qerramos agregar
+#va a haber qe agregar una rampa aca y definir los valores en el _ready
+var rampa1 = {}
 
-#Rampa2
-const x_rampa2 = xf_rampa1
-const y_rampa2 = yf_rampa1
-const xf_rampa2 = x_rampa2 + 3.10
-const yf_rampa2 = y_rampa2 - 1.0
-var alfa2
+var rampa2 = {}
 
-#Rampa3
 var rampa3 = {}
+
+var rampa4 = {}
 
 ############################################################################################
 
-const g = 9.8 #Aceleracion hacia abajo
+const posIn_x = 0.10 #Posicion inicial de la pelota
+const posIn_y = 3.20
+
+const g = 9.8 #Aceleracion de la gravedad
 
 var ar = 0
 var vr = 0 #Velocidad sobre la rampa1
 var t = 0 #Tiempo pasado desde el inicio
-var xant #La posicion anterior
-var yant
 var Pista = Array()
 
 func _ready():
-	$Pelota.position.x = x_rampa1 * escala
-	$Pelota.position.y = y_rampa1 * escala
+	#Pongo a la pelota en su posicion inicial
+	$Pelota.position.x = posIn_x * escala
+	$Pelota.position.y = posIn_y * escala
 
-	var dx1 = xf_rampa1 - x_rampa1
-	var dy1 = yf_rampa1 - y_rampa1
-	alfa1 = atan2(dy1, dx1)
+	#Definimos los valores de las rampas
+	#Rampa 1:
+	rampa1.T = "L" #Qe estilo de rampa es ("L" = Lineal)
+	rampa1.x0 = posIn_x #El inicio de la rampa 
+	rampa1.y0 = posIn_y #(si no lo especificamos el programa continua la rampa anterior)
+	rampa1.Dx = 3.0 #Cuanto cambia la rampa en x
+	rampa1.Dy = + 2.40 #Y el Y
+	rampa1.alfa = atan2(rampa1.Dy, rampa1.Dx) #El angulo de la pendiente
+	rampa1.col = Color(0, 100, 0) #El color de la rampa en Red Green Blue
 
-	var dx2 = xf_rampa2 - x_rampa2
-	var dy2 = yf_rampa2 - y_rampa2
-	alfa2 =  atan2(dy2, dx2)
-#	printt(alfa1, alfa2)
-	
-	rampa3.T = "C"
+	#Rampa 2:
+	rampa2.T = "L"
+	rampa2.Dx = + 3.10
+	rampa2.Dy = - 1.0
+	rampa2.alfa = atan2(rampa2.Dy, rampa2.Dx)
+	rampa2.col = Color(0, 0, 100)
+
+	#Ramoa 3:
+	rampa3.T = "C" #"C" = circular
 	rampa3.r = 3.0 #Radio
-	rampa3.x0 = xf_rampa2
-	rampa3.y0 = yf_rampa2
-	rampa3.x1 = rampa3.x0 + rampa3.r * 2.0 - 0.1
-	rampa3.y1 = rampa3.y0 - 1
+	rampa3.Dx = rampa3.r * 2 - 0.1
+	rampa3.Dy = -1
 	rampa3.col = Color(100, 0, 0)
 
-	Pista.push_back({"T":"L", "x0":x_rampa1, "y0":y_rampa1, "x1":xf_rampa1, "y1":yf_rampa1, "col": Color(0, 100, 0)})
-	Pista.push_back({"T":"L", "x1":xf_rampa2, "y1":yf_rampa2, "col": Color(0, 0, 100)})
+	#Rampa 4:
+	rampa4.T = "C"
+	rampa4.r = 3.0
+	rampa4.Dx = rampa3.r * 2 - 0.1
+	rampa4.Dy = -1
+	rampa4.col = Color(50, 50, 0)
+
+	#El orden de las rampas
+	Pista.push_back(rampa1)
+	Pista.push_back(rampa2)
 	Pista.push_back(rampa3)
+	Pista.push_back(rampa4)
 
 	arreglar_pista(Pista)
 
@@ -66,25 +77,33 @@ func dist(par):
 	return(sqrt(pow(par.x1 - par.x0, 2) + pow(par.y1 - par.y0, 2)))
 
 func arreglar_pista(pista):
-	var xant
-	var yant
+	var x0ant
+	var y0ant
 
 	for parte in pista:
-		if not parte.has("x0"): parte.x0 = xant
-		if not parte.has("y0"): parte.y0 = yant
+		#Si no especificamos inicio, qe la continue de la anterior
+		if not parte.has("x0"): parte.x0 = x0ant
+		if not parte.has("y0"): parte.y0 = y0ant
+		#Si no espeficicamos final, qe lo calcule de la pendiente qe le dimos
+		if not parte.has("x1"): parte.x1 = parte.x0 + parte.Dx
+		if not parte.has("y1"): parte.y1 = parte.y0 + parte.Dy
 
-		xant = parte.x1
-		yant = parte.y1
-
+		#Si es un circulo hace los calculos especificos para el circulo
 		if parte.T == "C":
 			checkeo_arco(parte)
 			cuentas_arco(parte)
 
+		#Define el final de esa pendiente como el inicio de la sigiente (a menos qe especifiqemos)
+		x0ant = parte.x1
+		y0ant = parte.y1
+
+#Revisamos qe el arco de las pendientes circulares tenga sentido
 func checkeo_arco(par):
 	var d = dist(par)
 	if d > par.r * 2:
 		print("ERROR, d > 2 * r", d, par) 
 
+#Hace las cuentas para el arco de nuestras pendientes circulares
 func cuentas_arco(par):
 	var b = -(par.x1-par.x0)/(par.y1-par.y0)
 	var c = (-pow(par.x0, 2) + pow(par.x1, 2) - pow(par.y0, 2) + pow(par.y1, 2))/(2.0*(par.y1-par.y0))
@@ -96,6 +115,7 @@ func cuentas_arco(par):
 	var dq = pow(bq, 2) - 4.0 * aq * cq
 	printt("AQ, BQ, CQ, DQ:", aq, bq, cq, dq)
 
+	#Nos calculamos las raices para DOS circulos, uno panza p'arriba y uno panza p'abajo.
 	var xcA = (-bq + sqrt(dq)) / (2.0*aq)
 	var xcB = (-bq - sqrt(dq)) / (2.0*aq)
 	printt("Raices x:", xcA, xcB)
@@ -103,8 +123,9 @@ func cuentas_arco(par):
 	var ycA = xcA * b + c
 	var ycB = xcB * b + c
 	printt("Raices y:", ycA, ycB)
-	#Nos calculamos las raices para DOS circulos, panza p'arriba y panza p'abajo.
 
+	#Aca elegimos qe circulo usar y calcula los angulos inicial y final (respecto del centro)
+	#XXXXARREGLARXXXX Veamos si hay alguna forma de qe lo eliga por su cuenta el programa
 	par.xc = xcB
 	par.yc = ycB
 	par.a0 = -atan2(par.y0 - par.yc, par.x0 - par.xc)
@@ -113,6 +134,7 @@ func cuentas_arco(par):
 	printt("Par circulo:", par)
 	return(par)
 
+#Mueve a la pelota sobre
 func calculo_rampa_recta(dt, alfa):
 	ar = g * sin(alfa) #Aceleracion sobre la rampa
 	vr += ar * dt #Integramos aceleracion para consegir velocidad
@@ -123,9 +145,12 @@ func calculo_rampa_recta(dt, alfa):
 	#A: Integre en la posicion el cambio qe produjo la aceleracion de esta rampa
 	printt("R1 y R2:", $Pelota.position.x, $Pelota.position.y)
 
+#Calcula la posicion sobre la rampa redonda, el chiste es qe la imaginamos como muchos
+#mini planos, por lo qe podemos hacer el calculo del plano una y otra vez para
+#calcular la velocidad.
 func calculo_rampa_redonda(dt):
-	var mix = $Pelota.position.x / escala
-	var temp1 = sqrt(pow(rampa3.r, 2) - pow(mix - rampa3.xc, 2))
+	var mix = $Pelota.position.x / escala #Averigua donde esta la pelota
+	var temp1 = sqrt(pow(rampa3.r, 2) - pow(mix - rampa3.xc, 2)) #dy
 	var alfa = atan2(1, 2 * temp1) #dy/dx = 1/temp1.,
 	#pero con x = r se volveria indefinida, por eso usamos atan2 qe tiene en cuenta ese caso
 	ar = -g * sin(alfa)
@@ -137,18 +162,18 @@ func calculo_rampa_redonda(dt):
 	
 	printt("R3:",  mix - rampa3.xc, alfa * 180 / PI, dd, vr, ar)
 
+#A cada instante
 func _process(delta):
-	$Velocimetro.scale.x = vr / 10
-	$Acelerometro.scale.x = ar / 20
+	#Pusimos dos flechas en la pantalla qe al crecer y achicarse marcan el cambio en:
+	$Velocimetro.scale.x = vr / 10 #La velocidad
+	$Acelerometro.scale.x = ar / 20 #La aceleracion
 
-	if $Pelota.position.x < xf_rampa1 * escala and $Pelota.position.x >= x_rampa1 * escala:
-		calculo_rampa_recta(delta, alfa1)
+	#Se fija en qe rampas esta, y cambia las variables
+	if $Pelota.position.x < rampa1.x1 * escala and $Pelota.position.x >= rampa1.x0 * escala:
+		calculo_rampa_recta(delta, rampa1.alfa)
 
-	if $Pelota.position.x < xf_rampa2 * escala and $Pelota.position.x >= x_rampa2 * escala:
-		calculo_rampa_recta(delta, alfa2)
+	if $Pelota.position.x < rampa2.x1 * escala and $Pelota.position.x >= rampa2.x0 * escala:
+		calculo_rampa_recta(delta, rampa2.alfa)
 
 	if $Pelota.position.x < rampa3.x1 * escala and $Pelota.position.x >= rampa3.x0 * escala:
 		calculo_rampa_redonda(delta)
-
-	xant = $Pelota.position.x
-	yant = $Pelota.position.y
