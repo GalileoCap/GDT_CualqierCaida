@@ -21,4 +21,4 @@ func _draw():
 
 	draw_line(Vector2(x0 * p.escala, y0 * p.escala), Vector2(x1 * p.escala, y1 * p.escala), Color(0, 100, 0), 5)
 	draw_line(Vector2(p.x_rampa2 * p.escala, p.y_rampa2 * p.escala), Vector2(p.xf_rampa2 * p.escala, p.yf_rampa2 * p.escala), Color(0, 0, 100), 5)
-	draw_circle_arc(Vector2(p.res.xc * p.escala, p.res.yc * p.escala), p.res.r * p.escala, p.res.a0, p.res.a1, 100)
+	draw_circle_arc(Vector2(p.rampa3.xc * p.escala, p.rampa3.yc * p.escala), p.rampa3.r * p.escala, p.rampa3.a0, p.rampa3.a1, 100)

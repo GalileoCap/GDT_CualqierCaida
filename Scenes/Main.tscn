@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://Scenes/Main.gd" type="Script" id=1]
 [ext_resource path="res://Scenes/Linea.tscn" type="PackedScene" id=2]
 [ext_resource path="res://Scenes/Linea.gd" type="Script" id=3]
 [ext_resource path="res://Scenes/Pelota.tscn" type="PackedScene" id=4]
+[ext_resource path="res://Assets/arrow-39526_960_720.png" type="Texture" id=5]
 
 [node name="Main" type="Node" index="0"]
 
@@ -17,5 +18,21 @@ script = ExtResource( 3 )
 
 scale = Vector2( 3, 3 )
 _sections_unfolded = [ "Transform" ]
+
+[node name="Velocimetro" type="Sprite" parent="." index="2"]
+
+position = Vector2( 645.803, 14.8234 )
+scale = Vector2( 0.1, 0.1 )
+texture = ExtResource( 5 )
+centered = false
+_sections_unfolded = [ "Offset" ]
+
+[node name="Acelerometro" type="Sprite" parent="." index="3"]
+
+position = Vector2( 536.243, 82.9066 )
+scale = Vector2( 0.1, 0.1 )
+texture = ExtResource( 5 )
+centered = false
+_sections_unfolded = [ "Offset" ]
 
 

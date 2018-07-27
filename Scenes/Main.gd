@@ -22,15 +22,11 @@ const yf_rampa2 = y_rampa2 - 1.0
 var alfa2
 
 #Rampa3
-const r_rampa3 = 3.0 #Radio
-var circ_rampa3 = 2 * PI * r_rampa3 * 0.25 #Circunferencia del cacho de rampa qe elegi
-const x_rampa3 = xf_rampa2
-const y_rampa3 = yf_rampa2
-const xf_rampa3 = x_rampa3 + r_rampa3
-const yf_rampa3 = y_rampa3 - r_rampa3
-
+var rampa3 = {}
+############################################################################################
 const g = 9.8 #Aceleracion hacia abajo
 
+var ar = 0
 var vr = 0 #Velocidad sobre la rampa1
 var t = 0 #Tiempo pasado desde el inicio
 var xant #La posicion anterior
@@ -51,41 +47,53 @@ func _ready():
 	alfa2 =  atan2(dy2, dx2)
 #	printt(alfa1, alfa2)
 
-	var r = r_rampa3
-	var x0 = x_rampa3
-	var y0 = y_rampa3
-	var x1 = x0 + r
-	var y1 = y0 - r
-	res = cuentas_arco(x0, y0, x1, y1, r)
+	rampa3.r = 3.0 #Radio
+	rampa3.x0 = xf_rampa2
+	rampa3.y0 = yf_rampa2
+	rampa3.x1 = rampa3.x0 + rampa3.r * 2 - 0.1
+	rampa3.y1 = rampa3.y0 - 1
 
-func cuentas_arco(x0, y0, x1, y1, r):
-	var b = -(x1-x0)/(y1-y0)
-	var c = (-pow(x0, 2) + pow(x1, 2) - pow(y0, 2) + pow(y1, 2))/(2.0*(y1-y0))
-#	printt("B y C:", b, c)
+	checkeo_arco(rampa3)
+	cuentas_arco(rampa3)
+
+func dist(par):
+	return(sqrt(pow(par.x1 - par.x0, 2) + pow(par.y1 - par.y0, 2)))
+
+func checkeo_arco(par):
+	var d = dist(par)
+	if d > par.r * 2:
+		print("ERROR, d > 2 * r", d, par) 
+
+func cuentas_arco(par):
+	var b = -(par.x1-par.x0)/(par.y1-par.y0)
+	var c = (-pow(par.x0, 2) + pow(par.x1, 2) - pow(par.y0, 2) + pow(par.y1, 2))/(2.0*(par.y1-par.y0))
+	printt("B y C:", b, c)
 
 	var aq = pow(b, 2) + 1.0
-	var bq = -2.0 * x0 + 2.0 * b * c - 2.0 * b * y0
-	var cq = pow(x0, 2) + pow(y0, 2) + pow(c, 2) - 2.0 * y0 * c - pow(r, 2)
+	var bq = -2.0 * par.x0 + 2.0 * b * c - 2.0 * b * par.y0
+	var cq = pow(par.x0, 2) + pow(par.y0, 2) + pow(c, 2) - 2.0 * par.y0 * c - pow(par.r, 2)
 	var dq = pow(bq, 2) - 4.0 * aq * cq
-#	printt("AQ, BQ, CQ, DQ:", aq, bq, cq, dq)
+	printt("AQ, BQ, CQ, DQ:", aq, bq, cq, dq)
 
 	var xcA = (-bq + sqrt(dq)) / (2.0*aq)
 	var xcB = (-bq - sqrt(dq)) / (2.0*aq)
-#	printt("Raices x:", xcA, xcB)
+	printt("Raices x:", xcA, xcB)
 
 	var ycA = xcA * b + c
 	var ycB = xcB * b + c
-#	printt("Raices y:", ycA, ycB)
+	printt("Raices y:", ycA, ycB)
 	#Nos calculamos las raices para DOS circulos, panza p'arriba y panza p'abajo.
 
-	var a0 = atan2(x0 - xcA, y0 - ycA)
-	var a1 = -atan2(x1 - xcA, y1 - ycA)
-#	printt("Angulos:", a0, a1)
-	var res = {"xc":xcB, "yc":ycB, "a0":a0, "a1":a1, "x0":x0, "x1":x1, "y0":y0, "y1":y1, "r":r, }
-	return(res)
+	par.xc = xcB
+	par.yc = ycB
+	par.a0 = atan2(par.x0 - par.xc, par.y0 - par.yc)
+	par.a1 = -atan2(par.x1 - par.xc, par.y1 - par.yc)
+
+	printt("Par circulo:", par)
+	return(par)
 
 func calculo_rampa_recta(dt, alfa):
-	var ar = g * sin(alfa) #Aceleracion sobre la rampa
+	ar = g * sin(alfa) #Aceleracion sobre la rampa
 	vr += ar * dt #Integramos aceleracion para consegir velocidad
 	var dd = vr * dt #cuanto nos movimos en este instante
 
@@ -96,25 +104,28 @@ func calculo_rampa_recta(dt, alfa):
 
 func calculo_rampa_redonda(dt):
 	var mix = $Pelota.position.x / escala
-	var temp1 = 0.5 * sqrt(pow(res.r, 2) - pow(mix - res.xc, 2))
-	var alfa = atan2(1, temp1) #dy/dx = 1/temp1.,
+	var temp1 = sqrt(pow(rampa3.r, 2) - pow(mix - rampa3.xc, 2))
+	var alfa = atan2(1, 2 * temp1) #dy/dx = 1/temp1.,
 	#pero con x = r se volveria indefinida, por eso usamos atan2 qe tiene en cuenta ese caso
-	var ar = -g * sin(alfa)
+	ar = -g * sin(alfa)
 	vr += ar * dt
 	var dd = vr * dt #dd es en la direccion de la tangente del plano
 
-	$Pelota.position.x += dd * cos(alfa) * escala
-	$Pelota.position.y -=  dd * sin(alfa) * escala
-	printt("R3:", $Pelota.position.x, alfa * 180 / PI, mix - res.xc, dd, vr, ar)
+	$Pelota.position.x = (mix + dd * cos(alfa)) * escala
+	$Pelota.position.y = (temp1 + rampa3.yc) * escala
+	printt("R3:",  mix - rampa3.xc, alfa * 180 / PI, dd, vr, ar)
 
 func _process(delta):
+	$Velocimetro.scale.x = vr / 10
+	$Acelerometro.scale.x = ar / 20
+
 	if $Pelota.position.x < xf_rampa1 * escala and $Pelota.position.x >= x_rampa1 * escala:
 		calculo_rampa_recta(delta, alfa1)
 
 	if $Pelota.position.x < xf_rampa2 * escala and $Pelota.position.x >= x_rampa2 * escala:
 		calculo_rampa_recta(delta, alfa2)
 
-	if $Pelota.position.x < xf_rampa3 * escala and $Pelota.position.x >= x_rampa3 * escala:
+	if $Pelota.position.x < rampa3.x1 * escala and $Pelota.position.x >= rampa3.x0 * escala:
 		calculo_rampa_redonda(delta)
 
 	xant = $Pelota.position.x
