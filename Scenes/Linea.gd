@@ -13,7 +13,7 @@ func draw_circle_arc(centro, radio, angulo_ini, angulo_fin, color):
 		var angulo_hasta = angulo_ini + i * (angulo_fin-angulo_ini) / cuantas_veces
 		var desde = centro + Vector2(cos(angulo_desde), -sin(angulo_desde)) * radio
 		var hasta = centro + Vector2(cos(angulo_hasta), -sin(angulo_hasta)) * radio
-		printt("Angulos:", i, desde, hasta, angulo_desde, angulo_hasta)
+#DBG		printt("Angulos:", i, desde, hasta, angulo_desde, angulo_hasta)
 
 		draw_line(desde, hasta, color, 5.0)
 

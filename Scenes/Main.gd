@@ -19,14 +19,6 @@ var vr = 0 #Velocidad sobre la rampa1
 var t = 0 #Tiempo pasado desde el inicio
 var Pista = Array()
 
-func _ready():
-	#Pongo a la pelota en su posicion inicial
-	$Pelota.position.x = posIn_x * escala
-	$Pelota.position.y = posIn_y * escala
-
-	pista_LbLsCh()
-	arreglar_pista(Pista)
-
 func pista_LbLsCh():
 	#El orden de las rampas
 	Pista.push_back(rampa_L_baja())
@@ -37,8 +29,6 @@ func pista_LbLsCh():
 func rampa_L_baja():
 	var rampa1 = {}
 	rampa1.T = "L" #Qe estilo de rampa es ("L" = Lineal)
-	rampa1.x0 = posIn_x #El inicio de la rampa 
-	rampa1.y0 = posIn_y #(si no lo especificamos el programa continua la rampa anterior)
 	rampa1.Dx = 3.0 #Cuanto cambia la rampa en x
 	rampa1.Dy = + 2.40 #Y el Y
 	rampa1.alfa = atan2(rampa1.Dy, rampa1.Dx) #El angulo de la pendiente
@@ -48,7 +38,7 @@ func rampa_L_baja():
 func rampa_L_sube():
 	var rampa2 = {}
 	rampa2.T = "L"
-	rampa2.Dx = + 3.10
+	rampa2.Dx = 3.10
 	rampa2.Dy = - 1.0
 	rampa2.alfa = atan2(rampa2.Dy, rampa2.Dx)
 	rampa2.col = Color(0, 0, 100)
@@ -59,7 +49,7 @@ func rampa_C_horizontal():
 	rampa3.T = "C" #"C" = circular
 	rampa3.r = 3.0 #Radio
 	rampa3.Dx = rampa3.r * 1.9 #1.9 asi siempre es mas chico qe el radio
-	rampa3.Dy = -0.000001 #Restamos esto para qe y1 e y0 no sean iguales
+	rampa3.Dy = 0.000001 #Restamos esto para qe y1 e y0 no sean iguales
 	rampa3.col = Color(100, 0, 0)
 	return(rampa3)
 
@@ -67,8 +57,8 @@ func dist(par):
 	return(sqrt(pow(par.x1 - par.x0, 2) + pow(par.y1 - par.y0, 2)))
 
 func arreglar_pista(pista):
-	var x0ant
-	var y0ant
+	var x0ant = posIn_x #El inicio de la rampa 
+	var y0ant = posIn_y #(si no lo especificamos el programa continua la rampa anterior)
 
 	for parte in pista:
 		#Si no especificamos inicio, qe la continue de la anterior
@@ -122,8 +112,8 @@ func cuentas_arco(par):
 	#XXXXARREGLARXXXX Veamos si hay alguna forma de qe lo eliga por su cuenta el programa
 	par.xc = xcB
 	par.yc = ycB
-	par.a0 = -atan2(par.y0 - par.yc, par.x0 - par.xc)
-	par.a1 = -atan2(par.y1 - par.yc, par.x1 - par.xc)
+	par.a0 = atan2(par.y0 - par.yc, par.x0 - par.xc)
+	par.a1 = atan2(par.y1 - par.yc, par.x1 - par.xc)
 
 	printt("Par circulo:", par)
 	return(par)
@@ -137,7 +127,7 @@ func calculo_rampa_recta(dt, alfa):
 	$Pelota.position.x += dd * cos(alfa) * escala #Transformo la posicion sobre la rampa en coordenadas
 	$Pelota.position.y += dd * sin(alfa) * escala
 	#A: Integre en la posicion el cambio qe produjo la aceleracion de esta rampa
-	printt("R1 y R2:", $Pelota.position.x, $Pelota.position.y)
+	printt("RL:", $Pelota.position.x, $Pelota.position.y)
 
 #Calcula la posicion sobre la rampa redonda, el chiste es qe la imaginamos como muchos
 #mini planos, por lo qe podemos hacer el calculo del plano una y otra vez para
@@ -153,17 +143,33 @@ func calculo_rampa_redonda(dt, rampa3):
 
 	$Pelota.position.x = (mix + dd * cos(alfa)) * escala
 	$Pelota.position.y = (temp1 + rampa3.yc) * escala
-	
-	printt("R3:",  mix - rampa3.xc, alfa * 180 / PI, dd, vr, ar)
+
+	var proxima_rampa = 0 #Por defecto segimos en esta
+	if rampa3.x0 * escala > $Pelota.position.x:
+		proxima_rampa = -1 #Nos fuimos para la anterior
+	elif rampa3.x1 * escala < $Pelota.position.x:
+		proxima_rampa = 1 #Nos fuimos para la sigiente
+
+	printt("RC:",  {"prox":proxima_rampa, "dc":mix - rampa3.xc, "angulo":alfa * 180 / PI, "dd":dd})
+	return(proxima_rampa)
+
+func _ready():
+	#Pongo a la pelota en su posicion inicial
+	$Pelota.position.x = posIn_x * escala
+	$Pelota.position.y = posIn_y * escala
+
+	Pista.push_back(rampa_C_horizontal())
+	arreglar_pista(Pista)
 
 #A cada instante
 func _process(delta):
 	#Pusimos dos flechas en la pantalla qe al crecer y achicarse marcan el cambio en:
 	$Velocimetro.scale.x = vr / 10 #La velocidad
 	$Acelerometro.scale.x = ar / 20 #La aceleracion
+	$Posicion.text = str($Pelota.position.x / escala)
 
 	for parte in Pista:
-		if $Pelota.position.x < parte.x1 * escala and $Pelota.position.x >= parte.x0 * escala:
+		if parte.x0 * escala <= $Pelota.position.x and $Pelota.position.x < parte.x1 * escala:
 			if parte.T == "C":
 				calculo_rampa_redonda(delta, parte)
 			else:
