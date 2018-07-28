@@ -24,12 +24,14 @@ func _ready():
 	$Pelota.position.x = posIn_x * escala
 	$Pelota.position.y = posIn_y * escala
 
+	pista_LbLsCh()
+	arreglar_pista(Pista)
+
+func pista_LbLsCh():
 	#El orden de las rampas
 	Pista.push_back(rampa_L_baja())
 	Pista.push_back(rampa_L_sube())
 	Pista.push_back(rampa_C_horizontal())
-
-	arreglar_pista(Pista)
 
 #Definimos los valores de las rampas
 func rampa_L_baja():
@@ -56,8 +58,8 @@ func rampa_C_horizontal():
 	var rampa3 = {}
 	rampa3.T = "C" #"C" = circular
 	rampa3.r = 3.0 #Radio
-	rampa3.Dx = rampa3.r * 2 - 0.1
-	rampa3.Dy = -1
+	rampa3.Dx = rampa3.r * 1.9 #1.9 asi siempre es mas chico qe el radio
+	rampa3.Dy = -0.000001 #Restamos esto para qe y1 e y0 no sean iguales
 	rampa3.col = Color(100, 0, 0)
 	return(rampa3)
 
@@ -85,11 +87,15 @@ func arreglar_pista(pista):
 		x0ant = parte.x1
 		y0ant = parte.y1
 
+func salir_error(mensaje, d):
+	printt("ERROR:", mensaje, d)
+	get_tree().quit()
+
 #Revisamos qe el arco de las pendientes circulares tenga sentido
 func checkeo_arco(par):
 	var d = dist(par)
 	if d > par.r * 2:
-		print("ERROR, d > 2 * r", d, par) 
+		salir_error("d > 2 * r", {"d":d, "par":par})
 
 #Hace las cuentas para el arco de nuestras pendientes circulares
 func cuentas_arco(par):
