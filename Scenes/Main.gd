@@ -135,9 +135,9 @@ func calculo_rampa_recta(dt, alfa):
 func calculo_rampa_redonda(dt, rampa3):
 	var mix = $Pelota.position.x / escala #Averigua donde esta la pelota
 	var temp1 = sqrt(pow(rampa3.r, 2) - pow(mix - rampa3.xc, 2)) #dy
-	var alfa = atan2(1, 2 * temp1) #dy/dx = 1/temp1.,
+	var alfa = atan2(1, -2 * temp1) #dy/dx = 1/temp1.,
 	#pero con x = r se volveria indefinida, por eso usamos atan2 qe tiene en cuenta ese caso
-	ar = -g * sin(alfa)
+	ar = -g * sin(alfa) #g es negativa porqe la gravedad va p'abajo
 	vr += ar * dt
 	var dd = vr * dt #dd es en la direccion de la tangente del plano
 
